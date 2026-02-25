@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gokul M · flip·flop architect</title>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&family=Inter:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* base & variables */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --bg-primary: #0A0C10;
+      --bg-secondary: #12161C;
+      --bg-tertiary: #1A1F26;
+      --vlsi-green: #00FF9C;
+      --stoic-gold: #C4A24C;
+      --signal-blue: #00C2FF;
+      --text-primary: #F0F4FA;
+      --text-secondary: #9AA8B9;
+      --linkedin-blue: #0077B5;
+      --github-purple: #8A63D2;
+      --green-glow: rgba(0, 255, 156, 0.2);
+      --gold-dim: rgba(196, 162, 76, 0.25);
+      --blue-trace: rgba(0, 194, 255, 0.2);
+      --white-dim: rgba(255, 255, 255, 0.03);
+      --font-roman: 'Cormorant', serif;
+      --font-sans: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --section-spacing: 8rem 2rem;
+      --container-width: 1400px;
+      --transition-slow: 1s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-medium: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-fast: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --glow-green: 0 0 30px rgba(0, 255, 156, 0.3);
+      --glow-gold: 0 0 30px rgba(196, 162, 76, 0.3);
+      --glow-blue: 0 0 30px rgba(0, 194, 255, 0.3);
+    }
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-weight: 300;
+      line-height: 1.7;
+      overflow-x: hidden;
+      position: relative;
+    }
+    #dynamicBackground {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.8;
+    }
+    .gradient-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg-primary) 100%);
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.8;
+      animation: pulseGradient 10s ease-in-out infinite;
+    }
+    @keyframes pulseGradient { 0%,100%{opacity:0.6;} 50%{opacity:0.8;} }
+    body::before {
+      content: '';
+      position: fixed;
+      top:0; left:0; width:100%; height:100%;
+      background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 12px),
+      radial-gradient(circle at 20% 30%, rgba(196,162,76,0.03) 0%, transparent 30%);
+      pointer-events: none; z-index:1;
+      animation: marbleShift 20s ease-in-out infinite;
+    }
+    @keyframes marbleShift { 0%,100%{transform:scale(1);} 50%{transform:scale(1.05);} }
+    .container { max-width:var(--container-width); margin:0 auto; padding:0 3rem; position:relative; z-index:10; }
+    .nav { position:fixed; top:0; left:0; width:100%; height:80px; background:rgba(10,12,16,0.85); backdrop-filter:blur(15px); border-bottom:1px solid var(--gold-dim); z-index:100; transition:var(--transition-medium); }
+    .nav.scrolled { height:70px; background:rgba(10,12,16,0.95); box-shadow:0 10px 30px rgba(0,0,0,0.3); }
+    .nav-container { max-width:var(--container-width); height:100%; margin:0 auto; padding:0 3rem; display:flex; justify-content:space-between; align-items:center; }
+    .nav-logo { font-family:var(--font-roman); font-size:2rem; font-weight:600; color:var(--text-primary); text-decoration:none; letter-spacing:2px; position:relative; transition:var(--transition-fast); }
+    .nav-logo::after { content:''; position:absolute; bottom:-5px; left:0; width:0; height:2px; background:linear-gradient(90deg, var(--vlsi-green), var(--signal-blue)); transition:width 0.5s; }
+    .nav-logo:hover::after { width:100%; }
+    .nav-logo span { color:var(--vlsi-green); animation:glow 2s ease-in-out infinite; }
+    @keyframes glow { 0%,100%{text-shadow:0 0 10px var(--green-glow);} 50%{text-shadow:0 0 20px var(--vlsi-green);} }
+    .nav-links { display:flex; gap:2.5rem; }
+    .nav-link { color:var(--text-secondary); text-decoration:none; font-size:0.9rem; font-weight:500; letter-spacing:1px; text-transform:uppercase; transition:var(--transition-fast); position:relative; padding:0.5rem 0; }
+    .nav-link::before { content:''; position:absolute; bottom:0; left:0; width:100%; height:1px; background:linear-gradient(90deg, var(--vlsi-green), var(--signal-blue), var(--stoic-gold)); transform:scaleX(0); transform-origin:right; transition:transform 0.5s; }
+    .nav-link:hover { color:var(--text-primary); }
+    .nav-link:hover::before { transform:scaleX(1); transform-origin:left; }
+    .section { min-height:100vh; padding:var(--section-spacing); display:flex; align-items:center; position:relative; opacity:0; transform:translateY(50px); transition:var(--transition-slow); z-index:5; }
+    .section.visible { opacity:1; transform:translateY(0); }
+    /* logic sections are hidden by default, shown via active class */
+    .logic-section { display: none; opacity: 0; transition: opacity 0.5s ease; }
+    .logic-section.active { display: flex; opacity: 1; }
+    .section-marker { position:absolute; left:0; top:50%; transform:translateY(-50%); font-family:var(--font-roman); font-size:15rem; font-weight:700; color:transparent; -webkit-text-stroke:1px var(--stoic-gold); opacity:0.08; z-index:2; line-height:1; animation:markerFloat 6s ease-in-out infinite; }
+    @keyframes markerFloat { 0%,100%{transform:translateY(-50%) translateX(0);} 50%{transform:translateY(-50%) translateX(10px);} }
+    h1,h2,h3,h4 { font-family:var(--font-roman); font-weight:600; }
+    .section-title { font-size:clamp(3.5rem, 8vw, 6rem); color:var(--text-primary); margin-bottom:3rem; position:relative; display:inline-block; text-shadow:0 0 30px rgba(0,255,156,0.2); animation:titleAppear 1s ease-out; }
+    @keyframes titleAppear { from{opacity:0;transform:translateX(-30px);} to{opacity:1;transform:translateX(0);} }
+    .section-title::before { content:''; position:absolute; bottom:-15px; left:0; width:150px; height:2px; background:linear-gradient(90deg, var(--stoic-gold), var(--vlsi-green), transparent); animation:lineExpand 1.5s ease-out; }
+    .section-title::after { content:''; position:absolute; bottom:-20px; left:0; width:50px; height:2px; background:var(--vlsi-green); box-shadow:0 0 20px var(--vlsi-green); animation:linePulse 2s ease-in-out infinite; }
+    @keyframes lineExpand { from{width:0;} to{width:150px;} }
+    @keyframes linePulse { 0%,100%{opacity:0.5;width:50px;} 50%{opacity:1;width:70px;} }
+    .waveform-container { position:absolute; bottom:0; left:0; width:100%; height:150px; overflow:hidden; opacity:0.15; pointer-events:none; z-index:3; }
+    .waveform { width:100%; height:100%; background:repeating-linear-gradient(90deg, transparent, transparent 20px, var(--signal-blue) 20px, var(--vlsi-green) 30px, transparent 30px, transparent 50px); mask-image:linear-gradient(90deg, transparent, black 20%, black 80%, transparent); animation:waveMove 12s linear infinite; filter:blur(1px); }
+    .waveform::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:repeating-linear-gradient(90deg, transparent, transparent 40px, var(--stoic-gold) 40px, var(--stoic-gold) 41px, transparent 41px, transparent 60px); opacity:0.3; animation:waveMove 8s linear infinite reverse; }
+    @keyframes waveMove { 0%{transform:translateX(0);} 100%{transform:translateX(-50px);} }
+    .hero { position:relative; }
+    .hero-content { max-width:900px; background:rgba(10,12,16,0.6); backdrop-filter:blur(10px); padding:4rem; border:1px solid var(--gold-dim); border-radius:8px; position:relative; overflow:hidden; animation:contentAppear 1.2s ease-out; }
+    .hero-content::before { content:''; position:absolute; top:-2px; left:-2px; right:-2px; bottom:-2px; background:linear-gradient(45deg, var(--vlsi-green), var(--signal-blue), var(--stoic-gold)); opacity:0; transition:opacity 0.5s; z-index:-1; border-radius:10px; }
+    .hero-content:hover::before { opacity:0.2; }
+    @keyframes contentAppear { from{opacity:0;transform:scale(0.95);} to{opacity:1;transform:scale(1);} }
+    .hero-sub { font-family:var(--font-mono); font-size:1rem; color:var(--stoic-gold); letter-spacing:8px; margin-bottom:2rem; text-transform:uppercase; animation:fadeInUp 1s ease-out 0.2s both; }
+    .hero-title { font-size:clamp(4.5rem,12vw,9rem); font-family:var(--font-roman); line-height:0.9; margin-bottom:2rem; color:var(--text-primary); animation:fadeInUp 1s ease-out 0.4s both; }
+    .hero-title span { color:var(--vlsi-green); display:block; font-style:italic; font-size:0.4em; margin-top:0.5rem; animation:glowPulse 3s ease-in-out infinite; }
+    @keyframes glowPulse { 0%,100%{text-shadow:0 0 20px var(--green-glow);} 50%{text-shadow:0 0 40px var(--vlsi-green);} }
+    .hero-desc { font-size:1.2rem; color:var(--text-secondary); max-width:700px; margin-bottom:3rem; padding-left:2rem; border-left:3px solid var(--stoic-gold); animation:fadeInUp 1s ease-out 0.6s both; }
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+    .hero-stats { display:flex; gap:4rem; margin-top:4rem; animation:fadeInUp 1s ease-out 0.8s both; }
+    .stat-item { text-align:left; position:relative; overflow:hidden; }
+    .stat-item::before { content:''; position:absolute; bottom:0; left:0; width:100%; height:2px; background:linear-gradient(90deg, var(--vlsi-green), transparent); transform:scaleX(0); transform-origin:left; transition:transform 0.5s; }
+    .stat-item:hover::before { transform:scaleX(1); }
+    .stat-value { font-size:3.5rem; font-family:var(--font-roman); color:var(--vlsi-green); line-height:1; text-shadow:0 0 30px var(--green-glow); transition:var(--transition-fast); }
+    .stat-item:hover .stat-value { transform:translateY(-5px); color:var(--signal-blue); }
+    .stat-label { font-size:0.8rem; color:var(--text-secondary); letter-spacing:3px; text-transform:uppercase; }
+    .btn { display:inline-block; padding:1.2rem 3.5rem; background:transparent; border:2px solid var(--stoic-gold); color:var(--stoic-gold); font-family:var(--font-sans); font-size:0.9rem; letter-spacing:4px; text-decoration:none; text-transform:uppercase; position:relative; overflow:hidden; transition:var(--transition-medium); cursor:pointer; z-index:20; border-radius:4px; }
+    .btn::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg, transparent, var(--green-glow), transparent); transition:left 0.6s; }
+    .btn::after { content:''; position:absolute; top:50%; left:50%; width:0; height:0; border-radius:50%; background:rgba(0,255,156,0.3); transform:translate(-50%,-50%); transition:width 0.6s, height 0.6s; z-index:-1; }
+    .btn:hover { border-color:var(--vlsi-green); color:var(--vlsi-green); box-shadow:var(--glow-green); }
+    .btn:hover::before { left:100%; }
+    .btn:hover::after { width:300px; height:300px; }
+    .architecture-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:2rem; margin-top:4rem; }
+    .arch-item { padding:2.5rem; background:rgba(18,22,28,0.7); backdrop-filter:blur(8px); border:1px solid var(--gold-dim); position:relative; transition:var(--transition-medium); border-radius:6px; overflow:hidden; }
+    .arch-item::before { content:''; position:absolute; top:-2px; left:-2px; right:-2px; bottom:-2px; background:linear-gradient(45deg, var(--vlsi-green), var(--signal-blue), var(--stoic-gold)); opacity:0; transition:opacity 0.4s; z-index:-1; border-radius:8px; }
+    .arch-item::after { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at 50%50%, var(--green-glow) 0%, transparent 70%); opacity:0; transition:opacity 0.5s; }
+    .arch-item:hover { transform:translateY(-8px) scale(1.02); }
+    .arch-item:hover::before { opacity:0.3; }
+    .arch-item:hover::after { opacity:0.1; }
+    .arch-number { font-family:var(--font-mono); color:var(--vlsi-green); font-size:0.9rem; margin-bottom:1rem; letter-spacing:2px; }
+    .arch-text { font-size:1.3rem; font-family:var(--font-roman); color:var(--text-primary); line-height:1.6; }
+    .skills-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px,1fr)); gap:2rem; margin-top:4rem; }
+    .skill-card { padding:2.5rem; background:rgba(18,22,28,0.7); backdrop-filter:blur(8px); border:1px solid #2D333B; transition:var(--transition-medium); position:relative; overflow:hidden; border-radius:6px; }
+    .skill-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:100%; background:linear-gradient(135deg, transparent, rgba(0,255,156,0.1)); opacity:0; transition:opacity 0.5s; }
+    .skill-card::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:3px; background:linear-gradient(90deg, var(--vlsi-green), var(--signal-blue), var(--stoic-gold)); transform:scaleX(0); transform-origin:left; transition:transform 0.6s; }
+    .skill-card:hover { border-color:var(--vlsi-green); transform:translateY(-5px); box-shadow:var(--glow-green); }
+    .skill-card:hover::before { opacity:1; }
+    .skill-card:hover::after { transform:scaleX(1); }
+    .skill-name { font-size:2rem; font-family:var(--font-roman); color:var(--stoic-gold); margin-bottom:1rem; transition:var(--transition-fast); }
+    .skill-card:hover .skill-name { color:var(--vlsi-green); transform:translateX(5px); }
+    .skill-desc { color:var(--text-secondary); font-size:1rem; line-height:1.8; }
+    .skill-meta { font-family:var(--font-mono); color:var(--signal-blue); font-size:0.8rem; margin-top:1.5rem; letter-spacing:1px; }
+    .projects-grid { display:grid; gap:1.5rem; margin-top:3rem; }
+    .project-card { padding:3rem; background:rgba(18,22,28,0.7); backdrop-filter:blur(8px); transition:var(--transition-medium); position:relative; cursor:pointer; border:1px solid var(--gold-dim); border-radius:6px; overflow:hidden; }
+    .project-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:0; background:linear-gradient(180deg, var(--vlsi-green), var(--signal-blue)); transition:height 0.5s; }
+    .project-card::after { content:''; position:absolute; bottom:0; right:0; width:150px; height:150px; background:radial-gradient(circle, var(--green-glow) 0%, transparent 70%); opacity:0; transition:opacity 0.5s; }
+    .project-card:hover { transform:translateX(15px) translateY(-5px); border-color:var(--vlsi-green); box-shadow:var(--glow-green); }
+    .project-card:hover::before { height:100%; }
+    .project-card:hover::after { opacity:0.2; }
+    .project-angle { font-family:var(--font-mono); color:var(--vlsi-green); font-size:0.8rem; letter-spacing:3px; margin-bottom:1rem; }
+    .project-title { font-size:2rem; font-family:var(--font-roman); color:var(--text-primary); margin-bottom:1rem; transition:var(--transition-fast); }
+    .project-card:hover .project-title { color:var(--signal-blue); }
+    .project-focus { color:var(--text-secondary); font-size:1rem; padding-left:2rem; border-left:2px solid var(--stoic-gold); }
+    .stoic-panel { display:grid; grid-template-columns:repeat(2,1fr); gap:3rem; margin-top:4rem; }
+    .quote-block { padding:3rem; background:rgba(18,22,28,0.7); backdrop-filter:blur(8px); border:1px solid var(--gold-dim); border-radius:6px; overflow:hidden; transition:var(--transition-medium); position:relative; }
+    .quote-block::before { content:''; position:absolute; top:10px; left:10px; right:10px; bottom:10px; border:1px solid var(--stoic-gold); opacity:0.2; pointer-events:none; transition:opacity 0.5s; }
+    .quote-block::after { content:'“'; font-family:var(--font-roman); font-size:8rem; color:var(--stoic-gold); opacity:0.1; position:absolute; bottom:-20px; right:20px; transition:all 0.5s; }
+    .quote-block:hover { transform:scale(1.02); border-color:var(--stoic-gold); box-shadow:var(--glow-gold); }
+    .quote-block:hover::before { opacity:0.4; }
+    .quote-block:hover::after { opacity:0.2; transform:rotate(10deg); }
+    .quote-text { font-family:var(--font-roman); font-size:1.5rem; font-style:italic; color:var(--text-primary); margin-bottom:2rem; position:relative; z-index:2; }
+    .quote-author { color:var(--stoic-gold); font-size:1rem; letter-spacing:3px; text-align:right; z-index:2; }
+    .edu-container { display:grid; grid-template-columns:1fr 1fr; gap:4rem; }
+    .edu-main { font-size:2.2rem; font-family:var(--font-roman); color:var(--text-primary); margin-bottom:1rem; }
+    .edu-cgpa { color:var(--vlsi-green); font-family:var(--font-mono); font-size:3.5rem; margin:1rem 0 2rem; text-shadow:0 0 30px var(--green-glow); animation:pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.8;} }
+    .edu-domains { display:flex; flex-wrap:wrap; gap:1rem; }
+    .domain-tag { padding:0.6rem 1.5rem; background:rgba(0,0,0,0.3); backdrop-filter:blur(5px); border:1px solid var(--gold-dim); color:var(--text-secondary); font-size:0.9rem; transition:var(--transition-fast); border-radius:4px; cursor:default; }
+    .domain-tag:hover { border-color:var(--vlsi-green); color:var(--vlsi-green); transform:translateY(-2px); box-shadow:var(--glow-green); }
+    .contact-container { max-width:700px; background:rgba(18,22,28,0.7); backdrop-filter:blur(10px); padding:3.5rem; border:1px solid var(--gold-dim); border-radius:8px; position:relative; overflow:hidden; }
+    .contact-container::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(45deg, transparent, var(--green-glow), transparent, var(--blue-trace), transparent); animation:rotate 10s linear infinite; opacity:0.1; }
+    @keyframes rotate { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
+    .contact-line { display:flex; align-items:center; gap:2rem; padding:1.5rem 0; border-bottom:1px solid #2D333B; position:relative; z-index:2; transition:var(--transition-fast); }
+    .contact-line:hover { transform:translateX(10px); border-bottom-color:var(--vlsi-green); }
+    .contact-label { font-family:var(--font-mono); color:var(--stoic-gold); min-width:100px; font-size:0.9rem; letter-spacing:1px; }
+    .contact-value { color:var(--text-primary); font-size:1.2rem; display:flex; align-items:center; gap:1rem; }
+    .contact-value a { color:var(--text-primary); text-decoration:none; transition:var(--transition-fast); display:flex; align-items:center; gap:0.8rem; padding:0.3rem 1rem; border-radius:4px; }
+    .contact-value a.linkedin-link:hover { color:var(--linkedin-blue); background:rgba(0,119,181,0.1); transform:translateX(5px); }
+    .contact-value a.github-link:hover { color:var(--github-purple); background:rgba(138,99,210,0.1); transform:translateX(5px); }
+    .contact-value i { font-size:1.8rem; transition:var(--transition-fast); }
+    .contact-value .fa-linkedin { color:var(--linkedin-blue); }
+    .contact-value .fa-github { color:var(--text-primary); }
+    .closing-statement { margin-top:4rem; font-size:2.2rem; font-family:var(--font-roman); color:var(--stoic-gold); text-align:center; padding:3rem 0; animation:fadeIn 2s ease-out; text-shadow:0 0 20px var(--gold-dim); }
+    .footer { padding:3rem 2rem; text-align:center; border-top:1px solid #2D333B; background:rgba(10,12,16,0.8); backdrop-filter:blur(10px); }
+    .footer-text { color:var(--text-secondary); font-size:0.9rem; letter-spacing:4px; }
+    .footer-gold { color:var(--stoic-gold); animation:glow 2s ease-in-out infinite; }
+    .footer-green { color:var(--vlsi-green); animation:glow 2s ease-in-out infinite 1s; }
+    @media (max-width:1024px) { .container{padding:0 2rem;} .architecture-grid{grid-template-columns:1fr;} .stoic-panel{grid-template-columns:1fr;} .edu-container{grid-template-columns:1fr;} .hero-stats{flex-wrap:wrap; gap:2rem;} }
+    @media (max-width:768px) { .nav-links{display:none;} .section{padding:6rem 1rem;} .section-marker{font-size:8rem;} .project-card{padding:2rem;} .hero-content{padding:2rem;} .contact-line{flex-direction:column; align-items:flex-start; gap:0.5rem;} .hero-stats{flex-direction:column; gap:1.5rem;} }
+
+    /* Small Fixed flip-flop control panel - like a compact chatbox */
+    .flip-panel-fixed {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(10, 12, 16, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--vlsi-green);
+      border-radius: 12px;
+      padding: 0.8rem;
+      box-shadow: 0 0 20px var(--green-glow);
+      animation: slideInRight 0.5s ease-out;
+      width: auto;
+      min-width: 160px;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .flip-panel-fixed .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--gold-dim);
+      padding-bottom: 0.3rem;
+    }
+
+    .flip-panel-fixed .panel-header h3 {
+      font-family: var(--font-mono);
+      color: var(--vlsi-green);
+      font-size: 0.7rem;
+      margin: 0;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .flip-panel-fixed .panel-header i {
+      color: var(--stoic-gold);
+      cursor: pointer;
+      transition: var(--transition-fast);
+      font-size: 0.7rem;
+    }
+
+    .flip-panel-fixed .panel-header i:hover {
+      color: var(--vlsi-green);
+      transform: scale(1.1);
+    }
+
+    .flip-panel-fixed .inputs-container {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      margin-bottom: 0.3rem;
+    }
+
+    .flip-panel-fixed .flip-input {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .flip-panel-fixed .flip-label {
+      font-family: var(--font-mono);
+      color: var(--stoic-gold);
+      letter-spacing: 1px;
+      font-size: 0.6rem;
+    }
+
+    .flip-panel-fixed .toggle-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .flip-panel-fixed .toggle-btn.active {
+      border-color: var(--vlsi-green);
+      color: var(--vlsi-green);
+      box-shadow: 0 0 15px var(--green-glow);
+      text-shadow: 0 0 5px var(--vlsi-green);
+    }
+
+    .flip-panel-fixed .state-display {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--signal-blue);
+      background: rgba(0,0,0,0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      border: 1px solid var(--gold-dim);
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .flip-panel-fixed .state-display span {
+      color: var(--vlsi-green);
+      font-weight: 600;
+    }
+
+    /* Responsive for mobile */
+    @media (max-width: 768px) {
+      .flip-panel-fixed {
+        bottom: 10px;
+        right: 10px;
+        left: auto;
+        min-width: 140px;
+        padding: 0.6rem;
+      }
+      
+      .flip-panel-fixed .toggle-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="dynamicBackground"></canvas>
+  <div class="gradient-overlay"></div>
+
+  <!-- Small Fixed Flip-Flop Control Panel (compact like a mini chatbox) -->
+  <div class="flip-panel-fixed" id="flipPanel">
+    <div class="panel-header">
+      <h3>FF CONTROL</h3>
+      <i class="fas fa-minus" id="minimizePanel"></i>
+    </div>
+    <div class="inputs-container">
+      <div class="flip-input">
+        <span class="flip-label">A</span>
+        <button class="toggle-btn" id="btnA">0</button>
+      </div>
+      <div class="flip-input">
+        <span class="flip-label">B</span>
+        <button class="toggle-btn" id="btnB">0</button>
+      </div>
+    </div>
+    <div class="state-display" id="stateDisplay"><span>00</span></div>
+  </div>
+
+  <nav class="nav" id="nav">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo">Gokul<span>.</span></a>
+      <div class="nav-links">
+        <a href="#about" class="nav-link">About</a>
+        <a href="#embedded" class="nav-link">skill</a>
+        <a href="#projects" class="nav-link">projects</a>
+        <a href="#vlsi" class="nav-link">Silicon</a>
+        <a href="#signal" class="nav-link">Signal</a>
+        <a href="#stoic" class="nav-link">message</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="section" id="hero">
+    <div class="section-marker">I</div>
+    <div class="waveform-container"><div class="waveform"></div></div>
+    <div class="container hero">
+      <div class="hero-content">
+        <div class="hero-sub">MEMENTO MORI</div>
+        <h1 class="hero-title">Gokul M<span>Architect of Silicon</span></h1>
+        <p class="hero-desc">In a universe governed by physical law, I master the domains I can control — voltage, logic, and structure. I design systems governed by logic and refined by discipline.</p>
+        <a href="#vlsi" class="btn">Enter the Architecture</a>
+        <div class="hero-stats">
+          <div class="stat-item"><div class="stat-value">7.63</div><div class="stat-label">CGPA</div></div>
+          <div class="stat-item"><div class="stat-value">5+</div><div class="stat-label">PROJECTS</div></div>
+          <div class="stat-item"><div class="stat-value">2027</div><div class="stat-label">GRADUATION</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- II About (logic‑controlled) -->
+  <section class="section logic-section" id="about">
+    <div class="section-marker">II</div>
+    <div class="container">
+      <h2 class="section-title">Amor Fati — The Engineer's Discipline</h2>
+      <div class="architecture-grid">
+        <div class="arch-item"><div class="arch-number">01</div><div class="arch-text">As an Electronics and Communication Engineering student, I pursue VLSI and Embedded Systems as structured paths of mastery.</div></div>
+        <div class="arch-item"><div class="arch-number">02</div><div class="arch-text">Every transistor reflects intention. Every signal represents causality. I refine systems to refine myself.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- III Education (unchanged, not logic) -->
+  <section class="section" id="education">
+    <div class="section-marker">III</div>
+    <div class="container">
+      <h2 class="section-title">Foundations of Structured Systems</h2>
+      <div class="edu-container">
+        <div>
+          <div class="edu-main">BE Electronics and Communication Engineering</div>
+          <div class="edu-cgpa">7.63 CGPA</div>
+          <div class="edu-domains">
+            <span class="domain-tag">Digital Electronics</span>
+            <span class="domain-tag">Analog Electronics</span>
+            <span class="domain-tag">Communication Systems</span>
+            <span class="domain-tag">Digital Signal Processing</span>
+            <span class="domain-tag">Control Systems</span>
+            <span class="domain-tag">Network Synthesis</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IV Embedded (logic‑controlled) -->
+  <section class="section logic-section" id="embedded">
+    <div class="section-marker">IV</div>
+    <div class="container">
+      <h2 class="section-title">Hard Real-Time Thinking</h2>
+      <div class="skills-grid">
+        <div class="skill-card"><div class="skill-name">C / C++</div><div class="skill-desc">Deterministic control over hardware. Memory, registers, and cycles — mastered.</div><div class="skill-meta">SYSTEMS LEVEL</div></div>
+        <div class="skill-card"><div class="skill-name">Python</div><div class="skill-desc">Rapid abstraction layered above structure. Intelligence through clarity.</div><div class="skill-meta">COMPUTATIONAL</div></div>
+        <div class="skill-card"><div class="skill-name">UART & I2C</div><div class="skill-desc">Structured electronic dialogue. The language of machines.</div><div class="skill-meta">PROTOCOLS</div></div>
+        <div class="skill-card"><div class="skill-name">Circuit Debugging</div><div class="skill-desc">Investigation of cause and effect. Order from electrical chaos.</div><div class="skill-meta">ANALYSIS</div></div>
+        <div class="skill-card"><div class="skill-name">MATLAB</div><div class="skill-desc">Visualization of invisible systems. Mathematics made visible.</div><div class="skill-meta">SIMULATION</div></div>
+        <div class="skill-card"><div class="skill-name">Embedded Logic</div><div class="skill-desc">Hardware meets philosophy. Every line defines behavior.</div><div class="skill-meta">DETERMINISM</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- V Projects (logic‑controlled) -->
+  <section class="section logic-section" id="projects">
+    <div class="section-marker">V</div>
+    <div class="container">
+      <h2 class="section-title">Existence Through Implementation</h2>
+      <div class="projects-grid">
+        <div class="project-card"><div class="project-angle">DETECTING STILLNESS WITHIN MOTION</div><div class="project-title">Idle Machine Identification</div><div class="project-focus">Sensor integration and embedded decision logic</div></div>
+        <div class="project-card"><div class="project-angle">ENGINEERING VIGILANCE</div><div class="project-title">Gas Leakage Detection</div><div class="project-focus">Real-time monitoring and alert system</div></div>
+        <div class="project-card"><div class="project-angle">PRECISION IN REPETITION</div><div class="project-title">Conveyor Belt Object Counter</div><div class="project-focus">Sensor interfacing and embedded counting logic</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VI VLSI (unchanged) -->
+  <section class="section" id="vlsi">
+    <div class="section-marker">VI</div>
+    <div class="container">
+      <h2 class="section-title">Silicon as Structured Thought</h2>
+      <div class="architecture-grid">
+        <div class="arch-item"><div class="arch-number">TRANSISTOR</div><div class="arch-text">Binary decisions carved into matter</div></div>
+        <div class="arch-item"><div class="arch-number">LOGIC GATES</div><div class="arch-text">Philosophical arguments in hardware form</div></div>
+        <div class="arch-item"><div class="arch-number">CLOCK CYCLES</div><div class="arch-text">Disciplined progression through time</div></div>
+        <div class="arch-item"><div class="arch-number">CHIP LAYOUT</div><div class="arch-text">Architectural reasoning made physical</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VII Signal (unchanged) -->
+  <section class="section signal-section" id="signal">
+    <div class="section-marker">VII</div>
+    <div class="container">
+      <h2 class="section-title">Waves of Order</h2>
+      <div class="architecture-grid">
+        <div class="arch-item"><div class="arch-number">SIGNAL</div><div class="arch-text">Structured communication through time</div></div>
+        <div class="arch-item"><div class="arch-number">NOISE</div><div class="arch-text">Uncertainty minimized through discipline</div></div>
+        <div class="arch-item"><div class="arch-number">FREQUENCY</div><div class="arch-text">The identity of oscillation</div></div>
+        <div class="arch-item"><div class="arch-number">AMPLITUDE</div><div class="arch-text">Strength of intention</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIII Stoic (unchanged) -->
+  <section class="section" id="stoic">
+    <div class="section-marker">VIII</div>
+    <div class="container">
+      <h2 class="section-title">Philosophical Anchors</h2>
+      <div class="stoic-panel">
+        <div class="quote-block"><div class="quote-text">"The obstacle is the way."</div><div class="quote-author">MARCUS AURELIUS</div></div>
+        <div class="quote-block"><div class="quote-text">"We are what we repeatedly do. Excellence, then, is not an act but a habit."</div><div class="quote-author">ARISTOTLE</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IX Contact (logic‑controlled) -->
+  <section class="section logic-section" id="contact">
+    <div class="section-marker">IX</div>
+    <div class="container">
+      <h2 class="section-title">Virtus — Controlled Strength</h2>
+      <div class="contact-container">
+        <div class="contact-line"><span class="contact-label">EMAIL</span><span class="contact-value">mgokul0506@gmail.com</span></div>
+        <div class="contact-line"><span class="contact-label">LINKEDIN</span><span class="contact-value"><a href="https://www.linkedin.com/in/gokulmahendran/" target="_blank" class="linkedin-link"><i class="fab fa-linkedin"></i> /in/gokulmahendran</a></span></div>
+        <div class="contact-line"><span class="contact-label">GITHUB</span><span class="contact-value"><a href="https://github.com/gokul06-git" target="_blank" class="github-link"><i class="fab fa-github"></i> /gokul06-git</a></span></div>
+        <div class="closing-statement">Logic governs systems. Discipline governs the engineer.</div>
+        <div style="text-align:center; margin-top:3rem;"><a href="#hero" class="btn">Return to Architecture</a></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-text">
+      <span class="footer-gold">MEMENTO MORI</span> · <span class="footer-green">AMOR FATI</span> · VIRTUS<br>
+      <span style="font-size:0.7rem; letter-spacing:2px;">A microchip cathedral of disciplined thought</span>
+    </div>
+  </footer>
+
+  <script>
+    // Intersection Observer for non-logic sections
+    const sections = document.querySelectorAll('.section:not(.logic-section)');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    sections.forEach(s => observer.observe(s));
+
+    // Navbar scroll effect
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => { nav.classList.toggle('scrolled', window.scrollY > 100); });
+
+    // Smooth scroll for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) { 
+        e.preventDefault(); 
+        const targetId = this.getAttribute('href');
+        const targetEl = document.querySelector(targetId);
+        if(targetEl) {
+          targetEl.scrollIntoView({ behavior: 'smooth' });
+          
+          // If it's a logic section, update flip state
+          if (targetId === '#about') { flipState = { A: 0, B: 0 }; updateOutput(false); }
+          else if (targetId === '#embedded') { flipState = { A: 0, B: 1 }; updateOutput(false); }
+          else if (targetId === '#projects') { flipState = { A: 1, B: 0 }; updateOutput(false); }
+          else if (targetId === '#contact') { flipState = { A: 1, B: 1 }; updateOutput(false); }
+        }
+      });
+    });
+
+    // Parallax effect for section markers
+    window.addEventListener('scroll', () => {
+      let scrolled = window.pageYOffset;
+      document.querySelectorAll('.section-marker').forEach(m => { 
+        m.style.transform = `translateY(${-(scrolled*0.2)}px) translateY(-50%)`; 
+      });
+    });
+
+    // Canvas animation (simplified)
+    const canvas = document.getElementById('dynamicBackground');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    function resize() { width = window.innerWidth; height = window.innerHeight; canvas.width = width; canvas.height = height; }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = 'rgba(0, 255, 156, 0.03)';
+      ctx.lineWidth = 0.5;
+      for(let i = 0; i < height; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, i);
+        ctx.lineTo(width, i);
+        ctx.stroke();
+      }
+      for(let i = 0; i < width; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, height);
+        ctx.stroke();
+      }
+      requestAnimationFrame(drawBackground);
+    }
+    drawBackground();
+
+    // ---------- Flip‑Flop Structural Controller ----------
+    let flipState = { A: 0, B: 0 };
+    const btnA = document.getElementById('btnA');
+    const btnB = document.getElementById('btnB');
+    const stateSpan = document.querySelector('#stateDisplay span');
+    const minimizeBtn = document.getElementById('minimizePanel');
+    const flipPanel = document.getElementById('flipPanel');
+
+    // Minimize panel functionality
+    let isMinimized = false;
+    minimizeBtn.addEventListener('click', () => {
+      if (isMinimized) {
+        flipPanel.style.transform = 'translateX(0)';
+        flipPanel.style.opacity = '1';
+        minimizeBtn.className = 'fas fa-minus';
+      } else {
+        flipPanel.style.transform = 'translateX(calc(100% - 30px))';
+        flipPanel.style.opacity = '0.5';
+        minimizeBtn.className = 'fas fa-plus';
+      }
+      isMinimized = !isMinimized;
+    });
+
+    // Controlled sections
+    const logicSections = {
+      about: document.getElementById('about'),
+      embedded: document.getElementById('embedded'),
+      projects: document.getElementById('projects'),
+      contact: document.getElementById('contact')
+    };
+
+    // Map binary states to section IDs
+    const stateToSection = {
+      '00': 'about',
+      '01': 'embedded',
+      '10': 'projects',
+      '11': 'contact'
+    };
+
+    function updateOutput(shouldScroll = true) {
+      const bits = `${flipState.A}${flipState.B}`;
+      stateSpan.textContent = bits;
+      
+      const targetId = stateToSection[bits];
+      
+      if (!targetId) return;
+
+      // Hide all logic sections
+      Object.values(logicSections).forEach(section => {
+        if (section) section.classList.remove('active');
+      });
+
+      // Show target section
+      const targetSection = logicSections[targetId];
+      if (targetSection) {
+        targetSection.classList.add('active');
+        
+        // Scroll to the section if shouldScroll is true
+        if (shouldScroll) {
+          targetSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
+
+      // Update button appearance
+      btnA.classList.toggle('active', flipState.A === 1);
+      btnB.classList.toggle('active', flipState.B === 1);
+      btnA.textContent = flipState.A;
+      btnB.textContent = flipState.B;
+    }
+
+    // Button click handlers - scroll to the section
+    btnA.addEventListener('click', () => {
+      flipState.A = flipState.A === 0 ? 1 : 0;
+      updateOutput(true);
+    });
+    
+    btnB.addEventListener('click', () => {
+      flipState.B = flipState.B === 0 ? 1 : 0;
+      updateOutput(true);
+    });
+
+    // Initialize: show about section (00)
+    flipState = { A: 0, B: 0 };
+    updateOutput(true);
+  </script>
+</body>
+</html>
